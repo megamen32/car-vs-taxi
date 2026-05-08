@@ -3,565 +3,1740 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Калькулятор окупаемости автомобиля</title>
+
   <style>
-    :root{
-      --bg1:#0b1020;
-      --bg2:#151b33;
-      --card:#11172b;
-      --card2:#0d1325;
-      --text:#eef2ff;
-      --muted:#a9b4d0;
-      --accent:#7c9cff;
-      --accent2:#9b7cff;
-      --good:#40d68b;
-      --warn:#ffb84d;
-      --border:rgba(255,255,255,.10);
-      --shadow:0 20px 60px rgba(0,0,0,.35);
-      --radius:20px;
+    :root {
+      --bg: #070a12;
+      --bg-soft: #0d1220;
+      --card: rgba(255, 255, 255, 0.065);
+      --card-strong: rgba(255, 255, 255, 0.105);
+      --card-soft: rgba(255, 255, 255, 0.04);
+      --text: #f5f7ff;
+      --muted: #9aa6c4;
+      --muted-2: #737f9f;
+      --border: rgba(255, 255, 255, 0.11);
+      --border-strong: rgba(255, 255, 255, 0.18);
+
+      --blue: #7c9cff;
+      --violet: #9b7cff;
+      --green: #40d68b;
+      --yellow: #ffbf5f;
+      --red: #ff6b7a;
+      --cyan: #53d7ff;
+
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+      --radius: 26px;
+      --radius-sm: 18px;
+      --blur: blur(24px);
     }
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
       background:
-        radial-gradient(1200px 700px at 15% -10%, rgba(124,156,255,.25), transparent 45%),
-        radial-gradient(900px 600px at 100% 10%, rgba(155,124,255,.20), transparent 40%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      min-height:100vh;
+        radial-gradient(900px 620px at 0% -10%, rgba(124, 156, 255, 0.28), transparent 55%),
+        radial-gradient(900px 620px at 100% 0%, rgba(155, 124, 255, 0.22), transparent 52%),
+        radial-gradient(700px 500px at 50% 100%, rgba(64, 214, 139, 0.12), transparent 55%),
+        linear-gradient(180deg, #070a12 0%, #0c1020 50%, #111729 100%);
     }
 
-    .wrap{
-      width:min(1240px, calc(100% - 32px));
-      margin:32px auto 48px;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at 50% 20%, black, transparent 75%);
+      opacity: .35;
     }
 
-    .hero{
-      display:flex;
-      justify-content:space-between;
-      gap:24px;
-      align-items:flex-start;
-      margin-bottom:24px;
+    input,
+    select,
+    button {
+      font: inherit;
     }
 
-    .hero h1{
-      margin:0 0 10px 0;
-      font-size:clamp(28px, 4vw, 42px);
-      line-height:1.08;
-      letter-spacing:-0.02em;
+    button {
+      cursor: pointer;
     }
 
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      max-width:860px;
-      line-height:1.55;
-      font-size:15px;
+    .app {
+      width: min(1440px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 30px 0 54px;
     }
 
-    .pill{
-      white-space:nowrap;
-      padding:12px 16px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      border-radius:999px;
-      color:var(--muted);
-      font-size:14px;
-      backdrop-filter: blur(10px);
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:22px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
     }
 
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .card .inner{ padding:22px; }
-
-    .section-title{
-      margin:0 0 16px 0;
-      font-size:18px;
-      letter-spacing:-0.01em;
-    }
-
-    .form-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:14px;
-    }
-
-    .field{
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-    }
-
-    .field label{
-      display:block;
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:10px;
-      line-height:1.3;
-    }
-
-    .field input, .field select{
-      width:100%;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:var(--text);
-      font-size:18px;
-      font-weight:600;
-    }
-
-    .field small{
-      display:block;
-      margin-top:8px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.35;
-    }
-
-    .span-2{ grid-column: span 2; }
-
-    .results{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:14px;
-      margin-top:10px;
-    }
-
-    .stat{
-      padding:16px;
-      border-radius:18px;
-      border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(124,156,255,.09), rgba(124,156,255,.03));
-    }
-
-    .stat .k{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
-      margin-bottom:8px;
-    }
-
-    .stat .v{
-      font-size:28px;
-      font-weight:800;
-      letter-spacing:-0.03em;
-      line-height:1.05;
-    }
-
-    .stat.good{
-      background:linear-gradient(180deg, rgba(64,214,139,.11), rgba(64,214,139,.04));
-    }
-
-    .stat.warn{
-      background:linear-gradient(180deg, rgba(255,184,77,.12), rgba(255,184,77,.04));
-    }
-
-    .big{
-      margin-top:16px;
-      padding:20px;
-      border-radius:20px;
-      border:1px solid var(--border);
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
       background:
-        radial-gradient(500px 150px at 0% 0%, rgba(124,156,255,.18), transparent 50%),
-        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.92), transparent 18%),
+        linear-gradient(135deg, var(--blue), var(--violet));
+      box-shadow: 0 20px 55px rgba(124, 156, 255, .3);
+      position: relative;
+      flex: 0 0 auto;
     }
 
-    .big .caption{
-      color:var(--muted);
-      font-size:14px;
-      margin-bottom:8px;
+    .logo::after {
+      content: "";
+      position: absolute;
+      inset: 12px 10px;
+      border-radius: 999px 999px 8px 8px;
+      border: 2px solid rgba(7, 10, 18, .78);
+      border-bottom-width: 4px;
     }
 
-    .big .value{
-      font-size:clamp(30px, 5vw, 48px);
-      font-weight:900;
-      letter-spacing:-0.04em;
-      line-height:1;
+    .brand-title {
+      font-weight: 850;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      font-size: 18px;
     }
 
-    .big .sub{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.5;
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
     }
 
-    .bars{
-      display:grid;
-      gap:12px;
-      margin-top:18px;
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .bar-row{
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:12px 14px;
-      background:rgba(255,255,255,.02);
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .055);
+      color: var(--muted);
+      backdrop-filter: var(--blur);
+      border-radius: 999px;
+      padding: 10px 13px;
+      font-size: 13px;
+      white-space: nowrap;
     }
 
-    .bar-head{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:8px;
-      font-size:14px;
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
     }
 
-    .bar-track{
-      height:12px;
-      background:rgba(255,255,255,.06);
-      border-radius:999px;
-      overflow:hidden;
+    .hero-main {
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(700px 300px at 0% 0%, rgba(124, 156, 255, .23), transparent 58%),
+        radial-gradient(600px 260px at 100% 0%, rgba(155, 124, 255, .16), transparent 54%),
+        linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 3vw, 34px);
+      overflow: hidden;
+      position: relative;
     }
 
-    .bar-fill{
-      height:100%;
-      width:0%;
-      border-radius:999px;
-      background:linear-gradient(90deg, var(--accent), var(--accent2));
-      transition:width .35s ease;
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -92px;
+      bottom: -118px;
+      border-radius: 50%;
+      border: 36px solid rgba(255,255,255,.045);
     }
 
-    .split{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:14px;
-      margin-top:16px;
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(124, 156, 255, .3);
+      background: rgba(124, 156, 255, .12);
+      color: #dce5ff;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 13px;
+      margin-bottom: 18px;
     }
 
-    .note{
-      margin-top:18px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 18px rgba(64, 214, 139, .9);
     }
 
-    .footer{
-      margin-top:14px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.5;
+    h1 {
+      margin: 0;
+      max-width: 860px;
+      font-size: clamp(34px, 5vw, 66px);
+      line-height: .96;
+      letter-spacing: -0.065em;
     }
 
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-      .hero{ flex-direction:column; }
+    .lead {
+      color: var(--muted);
+      margin: 18px 0 0;
+      max-width: 850px;
+      font-size: 16px;
+      line-height: 1.62;
     }
 
-    @media (max-width: 680px){
-      .form-grid, .results, .split{ grid-template-columns: 1fr; }
-      .span-2{ grid-column: span 1; }
+    .hero-side {
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .scenario-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+    }
+
+    .scenario-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 13px;
+      padding: 11px 8px;
+      font-weight: 750;
+      transition: .2s ease;
+      font-size: 13px;
+    }
+
+    .scenario-btn.active {
+      background: linear-gradient(135deg, rgba(124, 156, 255, .95), rgba(155, 124, 255, .95));
+      color: white;
+      box-shadow: 0 14px 32px rgba(124, 156, 255, .24);
+    }
+
+    .preset-select {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .preset-select label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .preset-select select {
+      width: 100%;
+      border: none;
+      outline: none;
+      color: var(--text);
+      background: transparent;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    select option {
+      background: #101629;
+      color: white;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .mini-card .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .mini-card .value {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.03fr) minmax(420px, .97fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.032));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-inner {
+      padding: 22px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: -0.035em;
+    }
+
+    .panel-title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section:first-of-type {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-head span {
+      color: var(--muted-2);
+      font-size: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+      border-radius: 18px;
+      padding: 14px;
+      transition: .2s ease;
+    }
+
+    .field:focus-within {
+      border-color: rgba(124, 156, 255, .55);
+      box-shadow: 0 0 0 4px rgba(124, 156, 255, .12);
+      background:
+        linear-gradient(180deg, rgba(124,156,255,.09), rgba(255,255,255,.025));
+    }
+
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-bottom: 9px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 820;
+      letter-spacing: -0.025em;
+      min-width: 0;
+    }
+
+    .field small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted-2);
+      line-height: 1.35;
+      font-size: 11.5px;
+    }
+
+    .span-2 {
+      grid-column: span 2;
+    }
+
+    .result-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .main-result {
+      border: 1px solid rgba(124,156,255,.28);
+      background:
+        radial-gradient(600px 220px at 0% 0%, rgba(124,156,255,.24), transparent 58%),
+        radial-gradient(480px 210px at 100% 0%, rgba(155,124,255,.16), transparent 54%),
+        linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.036));
+      border-radius: 24px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .main-result::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+    }
+
+    .result-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 9px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .result-value {
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: .95;
+      letter-spacing: -0.07em;
+      font-weight: 950;
+      position: relative;
+      z-index: 1;
+    }
+
+    .result-note {
+      color: var(--muted);
+      margin-top: 12px;
+      line-height: 1.48;
+      font-size: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.026));
+      border-radius: 20px;
+      padding: 15px;
+      min-width: 0;
+    }
+
+    .stat.good {
+      border-color: rgba(64, 214, 139, .24);
+      background:
+        linear-gradient(180deg, rgba(64,214,139,.12), rgba(255,255,255,.025));
+    }
+
+    .stat.warn {
+      border-color: rgba(255, 191, 95, .24);
+      background:
+        linear-gradient(180deg, rgba(255,191,95,.12), rgba(255,255,255,.025));
+    }
+
+    .stat.bad {
+      border-color: rgba(255, 107, 122, .25);
+      background:
+        linear-gradient(180deg, rgba(255,107,122,.12), rgba(255,255,255,.025));
+    }
+
+    .stat .k {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    .stat .v {
+      font-weight: 900;
+      font-size: 24px;
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+      overflow-wrap: anywhere;
+    }
+
+    .stat .s {
+      color: var(--muted-2);
+      font-size: 11.5px;
+      margin-top: 7px;
+      line-height: 1.35;
+    }
+
+    .chart-card {
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.024));
+      border-radius: 22px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .chart-head h3 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .chart-head span {
+      color: var(--muted-2);
+      font-size: 12px;
+    }
+
+    canvas {
+      width: 100%;
+      display: block;
+      border-radius: 16px;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-item {
+      display: grid;
+      gap: 7px;
+    }
+
+    .bar-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .bar-line span:first-child {
+      color: var(--muted);
+    }
+
+    .bar-line strong {
+      white-space: nowrap;
+    }
+
+    .track {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.07);
+    }
+
+    .fill {
+      height: 100%;
+      width: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue), var(--violet));
+      transition: width .28s ease;
+    }
+
+    .fill.green {
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+    }
+
+    .fill.yellow {
+      background: linear-gradient(90deg, var(--yellow), var(--violet));
+    }
+
+    .explain {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.035);
+      border-radius: 22px;
+      padding: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .explain strong {
+      color: var(--text);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted-2);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1120px) {
+      .hero,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        align-items: stretch;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        width: min(100% - 20px, 1440px);
+        padding-top: 14px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .hero-main,
+      .hero-side,
+      .panel-inner {
+        padding: 16px;
+      }
+
+      .form-grid,
+      .stats-grid,
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .span-2 {
+        grid-column: span 1;
+      }
+
+      h1 {
+        font-size: clamp(34px, 13vw, 52px);
+      }
+
+      .lead {
+        font-size: 14px;
+      }
+
+      .scenario-tabs {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <div>
-        <h1>Калькулятор окупаемости автомобиля<br>по сравнению с такси</h1>
-        <p>
-          Сайт считает, насколько быстро покупка машины отбивается за счёт экономии на такси.
-          Учитываются стоимость автомобиля, бензин, ОСАГО, транспортный налог, ТО и прочие базовые годовые расходы.
-          Налог считается автоматически по мощности двигателя.
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-title">Авто vs Такси</div>
+          <div class="brand-subtitle">Москва · владение · окупаемость · продажа</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="chip">Расчёт без сервера</div>
+        <div class="chip">Графики обновляются сразу</div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Честнее, чем просто “машина отбилась”
+        </div>
+
+        <h1>Калькулятор реальной окупаемости автомобиля</h1>
+
+        <p class="lead">
+          Сравнивает покупку машины с поездками на такси. Отдельно показывает простую окупаемость покупки
+          и реальную экономику владения: бензин, ОСАГО, налог, ТО, ремонт, парковки, мойки, шины,
+          платные дороги и потерю стоимости при будущей продаже.
         </p>
       </div>
-      <div class="pill">Дефолтные значения: твой сценарий</div>
-    </div>
 
-    <div class="grid">
-      <section class="card">
-        <div class="inner">
-          <h2 class="section-title">Входные данные</h2>
+      <aside class="hero-side">
+        <div class="preset-select">
+          <label for="carPreset">Пресет автомобиля</label>
+          <select id="carPreset">
+            <option value="custom">Своя машина</option>
+            <option value="lada_granta">Lada Granta</option>
+            <option value="lada_vesta">Lada Vesta</option>
+            <option value="haval_jolion" selected>Haval Jolion</option>
+            <option value="belgee_x50">Belgee X50</option>
+            <option value="chery_tiggo_7">Chery Tiggo 7 Pro Max</option>
+            <option value="geely_monjaro">Geely Monjaro</option>
+          </select>
+        </div>
 
-          <div class="form-grid">
-            <div class="field">
-              <label for="carPrice">Стоимость автомобиля, ₽</label>
-              <input id="carPrice" type="number" min="0" step="10000" value="2800000" />
-              <small>Начальная цена машины</small>
+        <div class="scenario-tabs" aria-label="Сценарий расчёта">
+          <button class="scenario-btn" type="button" data-scenario="soft">Мягкий</button>
+          <button class="scenario-btn active" type="button" data-scenario="base">Базовый</button>
+          <button class="scenario-btn" type="button" data-scenario="hard">Жёсткий</button>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="label">Цена авто</div>
+            <div class="value" id="miniCarPrice">—</div>
+          </div>
+          <div class="mini-card">
+            <div class="label">Мощность</div>
+            <div class="value" id="miniHp">—</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-title">
+            <div>
+              <h2>Входные данные</h2>
+              <p>Можно начать с пресета и потом поправить любые числа под себя.</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h3>Автомобиль</h3>
+              <span>покупка, продажа, налог</span>
             </div>
 
-            <div class="field">
-              <label for="engineHp">Мощность двигателя, л.с.</label>
-              <input id="engineHp" type="number" min="1" step="1" value="90" />
-              <small>По этому значению автоматически считается транспортный налог</small>
+            <div class="form-grid">
+              <div class="field">
+                <label for="carPrice">Стоимость автомобиля, ₽</label>
+                <input id="carPrice" type="number" min="0" step="10000" value="1999000" />
+                <small>Полная цена покупки машины.</small>
+              </div>
+
+              <div class="field">
+                <label for="engineHp">Мощность двигателя, л.с.</label>
+                <input id="engineHp" type="number" min="1" step="1" value="143" />
+                <small>Нужна для транспортного налога.</small>
+              </div>
+
+              <div class="field">
+                <label for="ownershipYears">Срок владения, лет</label>
+                <input id="ownershipYears" type="number" min="1" max="20" step="1" value="5" />
+                <small>Через сколько лет условно продаём машину.</small>
+              </div>
+
+              <div class="field">
+                <label for="resalePrice">Ожидаемая цена продажи, ₽</label>
+                <input id="resalePrice" type="number" min="0" step="10000" value="1150000" />
+                <small>Не для простой окупаемости, а для реальной экономики владения.</small>
+              </div>
+
+              <div class="field">
+                <label for="taxRegion">Регион налога</label>
+                <select id="taxRegion">
+                  <option value="moscow" selected>Москва</option>
+                  <option value="custom">Свой тариф</option>
+                </select>
+                <small>Для Москвы ставка зависит от мощности.</small>
+              </div>
+
+              <div class="field" id="customTaxField" style="display:none;">
+                <label for="customTaxRate">Свой налог, ₽ за 1 л.с.</label>
+                <input id="customTaxRate" type="number" min="0" step="1" value="35" />
+                <small>Используется только в режиме своего тарифа.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h3>Маршрут</h3>
+              <span>такси и пробег</span>
             </div>
 
-            <div class="field">
-              <label for="distanceOneWay">Расстояние в одну сторону, км</label>
-              <input id="distanceOneWay" type="number" min="0" step="1" value="60" />
-              <small>Путь от дома до места назначения в один конец</small>
+            <div class="form-grid">
+              <div class="field">
+                <label for="distanceOneWay">Расстояние в одну сторону, км</label>
+                <input id="distanceOneWay" type="number" min="0" step="1" value="60" />
+                <small>Дом → место назначения.</small>
+              </div>
+
+              <div class="field">
+                <label for="daysPerWeek">Дней в неделю</label>
+                <input id="daysPerWeek" type="number" min="0" max="7" step="1" value="5" />
+                <small>Сколько дней реально ездить.</small>
+              </div>
+
+              <div class="field">
+                <label for="workWeeks">Недель в году</label>
+                <input id="workWeeks" type="number" min="1" max="52" step="1" value="48" />
+                <small>48 реалистичнее 52, если есть отпуска/перерывы.</small>
+              </div>
+
+              <div class="field">
+                <label for="taxiOneWay">Такси в одну сторону, ₽</label>
+                <input id="taxiOneWay" type="number" min="0" step="100" value="2500" />
+                <small>Если туда-обратно, калькулятор умножит на 2.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h3>Эксплуатация</h3>
+              <span>ежегодные расходы</span>
             </div>
 
-            <div class="field">
-              <label for="daysPerWeek">Сколько дней в неделю ездить</label>
-              <input id="daysPerWeek" type="number" min="0" max="7" step="1" value="5" />
-              <small>Рабочие/поездочные дни</small>
-            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="fuelConsumption">Расход топлива, л / 100 км</label>
+                <input id="fuelConsumption" type="number" min="0" step="0.1" value="8.5" />
+                <small>Город + трасса. Лучше ставить не паспортный минимум.</small>
+              </div>
 
-            <div class="field">
-              <label for="taxiOneWay">Такси в одну сторону, ₽</label>
-              <input id="taxiOneWay" type="number" min="0" step="100" value="2500" />
-              <small>По умолчанию 2500 ₽ именно в одну сторону</small>
-            </div>
+              <div class="field">
+                <label for="fuelPrice">Цена бензина, ₽ / л</label>
+                <input id="fuelPrice" type="number" min="0" step="0.1" value="70" />
+                <small>Для Москвы в 2026 около 70 ₽ за АИ-95 — нормальный дефолт.</small>
+              </div>
 
-            <div class="field">
-              <label for="fuelConsumption">Расход топлива, л / 100 км</label>
-              <input id="fuelConsumption" type="number" min="0" step="0.1" value="6.8" />
-              <small>Средний расход автомобиля</small>
-            </div>
+              <div class="field">
+                <label for="osagoYear">ОСАГО в год, ₽</label>
+                <input id="osagoYear" type="number" min="0" step="1000" value="18000" />
+                <small>Сильно зависит от водителя, КБМ, стажа и страховщика.</small>
+              </div>
 
-            <div class="field">
-              <label for="fuelPrice">Цена бензина, ₽ / литр</label>
-              <input id="fuelPrice" type="number" min="0" step="0.1" value="62.8" />
-              <small>Стоимость топлива</small>
-            </div>
+              <div class="field">
+                <label for="kaskoYear">КАСКО в год, ₽</label>
+                <input id="kaskoYear" type="number" min="0" step="5000" value="0" />
+                <small>Если не нужно — оставь 0.</small>
+              </div>
 
-            <div class="field">
-              <label for="osagoYear">ОСАГО в год, ₽</label>
-              <input id="osagoYear" type="number" min="0" step="100" value="7280" />
-              <small>Базовая обязательная страховка</small>
-            </div>
+              <div class="field">
+                <label for="maintenanceYear">ТО в год, ₽</label>
+                <input id="maintenanceYear" type="number" min="0" step="1000" value="40000" />
+                <small>Плановое обслуживание.</small>
+              </div>
 
-            <div class="field">
-              <label for="maintenanceYear">ТО в год, ₽</label>
-              <input id="maintenanceYear" type="number" min="0" step="1000" value="30000" />
-              <small>Плановое обслуживание</small>
-            </div>
+              <div class="field">
+                <label for="repairsYear">Внеплановый ремонт в год, ₽</label>
+                <input id="repairsYear" type="number" min="0" step="5000" value="50000" />
+                <small>Колодки, подвеска, диагностика, мелкие поломки.</small>
+              </div>
 
-            <div class="field">
-              <label for="consumablesYear">Шины и расходники в год, ₽</label>
-              <input id="consumablesYear" type="number" min="0" step="1000" value="20000" />
-              <small>Резина, щётки, жидкости, мелкие расходы</small>
-            </div>
+              <div class="field">
+                <label for="consumablesYear">Расходники в год, ₽</label>
+                <input id="consumablesYear" type="number" min="0" step="1000" value="25000" />
+                <small>Жидкости, щётки, лампы, мелкие покупки.</small>
+              </div>
 
-            <div class="field">
-              <label for="workWeeks">Сколько недель в году ездить</label>
-              <input id="workWeeks" type="number" min="1" max="52" step="1" value="52" />
-              <small>Можно уменьшить, если есть отпуска и длительные перерывы</small>
-            </div>
+              <div class="field">
+                <label for="tireServiceYear">Шиномонтаж / хранение, ₽ в год</label>
+                <input id="tireServiceYear" type="number" min="0" step="1000" value="15000" />
+                <small>Сезонная переобувка и хранение шин.</small>
+              </div>
 
-            <div class="field span-2">
-              <label for="taxRegion">Регион для транспортного налога</label>
-              <select id="taxRegion">
-                <option value="moscow" selected>Москва</option>
-                <option value="custom">Свой тариф</option>
-              </select>
-              <small>По умолчанию используется шкала транспортного налога для Москвы</small>
-            </div>
+              <div class="field">
+                <label for="parkingMonth">Парковки, ₽ в месяц</label>
+                <input id="parkingMonth" type="number" min="0" step="500" value="5000" />
+                <small>Для Москвы лучше не игнорировать.</small>
+              </div>
 
-            <div class="field span-2" id="customTaxField" style="display:none;">
-              <label for="customTaxRate">Свой тариф транспортного налога, ₽ за 1 л.с.</label>
-              <input id="customTaxRate" type="number" min="0" step="1" value="14" />
-              <small>Нужно только если выбран режим “Свой тариф”</small>
+              <div class="field">
+                <label for="washMonth">Мойки, ₽ в месяц</label>
+                <input id="washMonth" type="number" min="0" step="500" value="3000" />
+                <small>Средний регулярный уход.</small>
+              </div>
+
+              <div class="field span-2">
+                <label for="tollPerDay">Платные дороги в поездочный день, ₽</label>
+                <input id="tollPerDay" type="number" min="0" step="100" value="0" />
+                <small>Если маршрут через МСД, М-11, ЦКАД или другие платные участки.</small>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="card">
-        <div class="inner">
-          <h2 class="section-title">Результат</h2>
+      <aside class="result-stack">
+        <section class="main-result">
+          <div class="result-label">Простая окупаемость покупки</div>
+          <div class="result-value" id="paybackMain">—</div>
+          <div class="result-note" id="paybackText">—</div>
+        </section>
 
-          <div class="big">
-            <div class="caption">Окупаемость автомобиля</div>
-            <div class="value" id="paybackMain">—</div>
-            <div class="sub" id="paybackText">—</div>
-          </div>
-
-          <div class="results">
-            <div class="stat good">
-              <div class="k">Экономия в год относительно такси</div>
-              <div class="v" id="yearlySavings">—</div>
-            </div>
-            <div class="stat">
-              <div class="k">Стоимость поездок на такси в год</div>
-              <div class="v" id="taxiYearly">—</div>
-            </div>
-            <div class="stat">
-              <div class="k">Стоимость владения авто в год</div>
-              <div class="v" id="carYearly">—</div>
-            </div>
-            <div class="stat warn">
-              <div class="k">Транспортный налог в год</div>
-              <div class="v" id="taxYearly">—</div>
-            </div>
-          </div>
-
-          <div class="split">
-            <div class="stat">
-              <div class="k">Км в год</div>
-              <div class="v" id="kmYearly">—</div>
-            </div>
-            <div class="stat">
-              <div class="k">Бензин в год</div>
-              <div class="v" id="fuelYearly">—</div>
-            </div>
-          </div>
-
-          <div class="bars">
-            <div class="bar-row">
-              <div class="bar-head">
-                <span>Такси в день</span>
-                <strong id="taxiPerDay">—</strong>
+        <section class="panel">
+          <div class="panel-inner">
+            <div class="stats-grid">
+              <div class="stat good" id="simpleSavingCard">
+                <div class="k">Экономия в год без учёта продажи</div>
+                <div class="v" id="simpleYearlySavings">—</div>
+                <div class="s">Для расчёта окупаемости покупки.</div>
               </div>
-              <div class="bar-track"><div class="bar-fill" id="taxiBar"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bar-head">
-                <span>Авто в день</span>
-                <strong id="carPerDay">—</strong>
+
+              <div class="stat" id="realSavingCard">
+                <div class="k">Реальная выгода в год</div>
+                <div class="v" id="realYearlySavings">—</div>
+                <div class="s">Эксплуатация + потеря стоимости.</div>
               </div>
-              <div class="bar-track"><div class="bar-fill" id="carBar"></div></div>
+
+              <div class="stat">
+                <div class="k">Такси в год</div>
+                <div class="v" id="taxiYearly">—</div>
+                <div class="s" id="taxiDaily">—</div>
+              </div>
+
+              <div class="stat warn">
+                <div class="k">Авто в год без амортизации</div>
+                <div class="v" id="carYearlyNoDep">—</div>
+                <div class="s">Бензин, налог, ТО, ремонт, парковки и т.д.</div>
+              </div>
+
+              <div class="stat">
+                <div class="k">Потеря стоимости в год</div>
+                <div class="v" id="depreciationYearly">—</div>
+                <div class="s" id="depreciationText">—</div>
+              </div>
+
+              <div class="stat">
+                <div class="k">Пробег в год</div>
+                <div class="v" id="kmYearly">—</div>
+                <div class="s" id="fuelLiters">—</div>
+              </div>
             </div>
+          </div>
+        </section>
+
+        <section class="chart-card">
+          <div class="chart-head">
+            <h3>Накопленная разница: авто против такси</h3>
+            <span id="breakEvenLabel">—</span>
+          </div>
+          <canvas id="timelineChart" height="230"></canvas>
+        </section>
+
+        <section class="chart-card">
+          <div class="chart-head">
+            <h3>Структура годовых расходов на авто</h3>
+            <span>без цены покупки</span>
+          </div>
+          <canvas id="costChart" height="220"></canvas>
+        </section>
+
+        <section class="chart-card">
+          <div class="chart-head">
+            <h3>Главные статьи расходов</h3>
+            <span>в год</span>
           </div>
 
-          <div class="note" id="detailsText"></div>
-          <div class="footer">
-            В расчёте не учитываются проценты по кредиту на машину, падение стоимости автомобиля при продаже, платные парковки,
-            штрафы, крупные поломки и КАСКО. Это именно базовая модель “минимально необходимых расходов”.
+          <div class="bar-list">
+            <div class="bar-item">
+              <div class="bar-line">
+                <span>Такси</span>
+                <strong id="barTaxiText">—</strong>
+              </div>
+              <div class="track"><div class="fill" id="barTaxi"></div></div>
+            </div>
+
+            <div class="bar-item">
+              <div class="bar-line">
+                <span>Авто без потери стоимости</span>
+                <strong id="barCarText">—</strong>
+              </div>
+              <div class="track"><div class="fill green" id="barCar"></div></div>
+            </div>
+
+            <div class="bar-item">
+              <div class="bar-line">
+                <span>Авто с потерей стоимости</span>
+                <strong id="barRealCarText">—</strong>
+              </div>
+              <div class="track"><div class="fill yellow" id="barRealCar"></div></div>
+            </div>
           </div>
+        </section>
+
+        <section class="explain" id="explainText">
+          —
+        </section>
+
+        <div class="footer-note">
+          Это бытовая модель, а не финансовая экспертиза. Она не учитывает кредитную ставку, инфляцию,
+          альтернативную доходность капитала, аварии, штрафы, резкое изменение рынка, стоимость времени водителя
+          и личную ценность комфорта.
         </div>
-      </section>
-    </div>
-  </div>
+      </aside>
+    </section>
+  </main>
 
   <script>
     const $ = (id) => document.getElementById(id);
 
-    function moscowTaxPerHp(hp){
+    const carPresets = {
+      custom: null,
+
+      lada_granta: {
+        name: "Lada Granta",
+        price: 900000,
+        hp: 90,
+        resaleRatio: 0.55,
+        fuel: 7.4,
+        osago: 15000,
+        maintenance: 30000,
+        repairs: 45000,
+        consumables: 20000,
+        tires: 12000
+      },
+
+      lada_vesta: {
+        name: "Lada Vesta",
+        price: 1600000,
+        hp: 106,
+        resaleRatio: 0.56,
+        fuel: 8.0,
+        osago: 17000,
+        maintenance: 35000,
+        repairs: 50000,
+        consumables: 23000,
+        tires: 14000
+      },
+
+      haval_jolion: {
+        name: "Haval Jolion",
+        price: 1999000,
+        hp: 143,
+        resaleRatio: 0.55,
+        fuel: 8.5,
+        osago: 18000,
+        maintenance: 40000,
+        repairs: 50000,
+        consumables: 25000,
+        tires: 15000
+      },
+
+      belgee_x50: {
+        name: "Belgee X50",
+        price: 2480000,
+        hp: 150,
+        resaleRatio: 0.54,
+        fuel: 8.2,
+        osago: 19000,
+        maintenance: 42000,
+        repairs: 55000,
+        consumables: 26000,
+        tires: 16000
+      },
+
+      chery_tiggo_7: {
+        name: "Chery Tiggo 7 Pro Max",
+        price: 2560000,
+        hp: 147,
+        resaleRatio: 0.52,
+        fuel: 8.7,
+        osago: 20000,
+        maintenance: 45000,
+        repairs: 60000,
+        consumables: 28000,
+        tires: 17000
+      },
+
+      geely_monjaro: {
+        name: "Geely Monjaro",
+        price: 4450000,
+        hp: 238,
+        resaleRatio: 0.50,
+        fuel: 10.2,
+        osago: 30000,
+        maintenance: 65000,
+        repairs: 85000,
+        consumables: 35000,
+        tires: 25000
+      }
+    };
+
+    const scenarioPresets = {
+      soft: {
+        resaleMultiplier: 1.12,
+        fuelPrice: 68,
+        parkingMonth: 1500,
+        washMonth: 2000,
+        repairsMultiplier: 0.65,
+        kaskoYear: 0,
+        weeks: 48
+      },
+
+      base: {
+        resaleMultiplier: 1.0,
+        fuelPrice: 70,
+        parkingMonth: 5000,
+        washMonth: 3000,
+        repairsMultiplier: 1.0,
+        kaskoYear: 0,
+        weeks: 48
+      },
+
+      hard: {
+        resaleMultiplier: 0.86,
+        fuelPrice: 75,
+        parkingMonth: 9000,
+        washMonth: 4500,
+        repairsMultiplier: 1.45,
+        kaskoYear: 90000,
+        weeks: 50
+      }
+    };
+
+    let activeScenario = "base";
+
+    const inputIds = [
+      "carPrice",
+      "engineHp",
+      "ownershipYears",
+      "resalePrice",
+      "taxRegion",
+      "customTaxRate",
+      "distanceOneWay",
+      "daysPerWeek",
+      "workWeeks",
+      "taxiOneWay",
+      "fuelConsumption",
+      "fuelPrice",
+      "osagoYear",
+      "kaskoYear",
+      "maintenanceYear",
+      "repairsYear",
+      "consumablesYear",
+      "tireServiceYear",
+      "parkingMonth",
+      "washMonth",
+      "tollPerDay"
+    ];
+
+    function formatRub(value) {
+      return new Intl.NumberFormat("ru-RU", {
+        style: "currency",
+        currency: "RUB",
+        maximumFractionDigits: 0
+      }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function formatNum(value, digits = 1) {
+      return new Intl.NumberFormat("ru-RU", {
+        maximumFractionDigits: digits
+      }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function getVal(id) {
+      return Number($(id).value) || 0;
+    }
+
+    function setVal(id, value) {
+      $(id).value = value;
+    }
+
+    function moscowTaxPerHp(hp) {
       hp = Number(hp) || 0;
+
       if (hp <= 100) return 14;
-      if (hp <= 125) return 25;
+      if (hp <= 125) return 31;
       if (hp <= 150) return 35;
       if (hp <= 175) return 45;
       if (hp <= 200) return 50;
       if (hp <= 225) return 65;
       if (hp <= 250) return 75;
+
       return 150;
     }
 
-    function formatRub(value){
-      return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB',
-        maximumFractionDigits: 0
-      }).format(value);
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
     }
 
-    function formatNum(value, digits = 1){
-      return new Intl.NumberFormat('ru-RU', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: digits
-      }).format(value);
+    function getInputs() {
+      return {
+        carPrice: getVal("carPrice"),
+        engineHp: getVal("engineHp"),
+        ownershipYears: Math.max(getVal("ownershipYears"), 1),
+        resalePrice: getVal("resalePrice"),
+        taxRegion: $("taxRegion").value,
+        customTaxRate: getVal("customTaxRate"),
+
+        distanceOneWay: getVal("distanceOneWay"),
+        daysPerWeek: clamp(getVal("daysPerWeek"), 0, 7),
+        workWeeks: clamp(getVal("workWeeks"), 1, 52),
+        taxiOneWay: getVal("taxiOneWay"),
+
+        fuelConsumption: getVal("fuelConsumption"),
+        fuelPrice: getVal("fuelPrice"),
+        osagoYear: getVal("osagoYear"),
+        kaskoYear: getVal("kaskoYear"),
+        maintenanceYear: getVal("maintenanceYear"),
+        repairsYear: getVal("repairsYear"),
+        consumablesYear: getVal("consumablesYear"),
+        tireServiceYear: getVal("tireServiceYear"),
+        parkingMonth: getVal("parkingMonth"),
+        washMonth: getVal("washMonth"),
+        tollPerDay: getVal("tollPerDay")
+      };
     }
 
-    function getVal(id){
-      return Number($(id).value) || 0;
-    }
+    function calculate() {
+      const x = getInputs();
 
-    function update(){
-      const carPrice = getVal('carPrice');
-      const engineHp = getVal('engineHp');
-      const distanceOneWay = getVal('distanceOneWay');
-      const daysPerWeek = getVal('daysPerWeek');
-      const taxiOneWay = getVal('taxiOneWay');
-      const fuelConsumption = getVal('fuelConsumption');
-      const fuelPrice = getVal('fuelPrice');
-      const osagoYear = getVal('osagoYear');
-      const maintenanceYear = getVal('maintenanceYear');
-      const consumablesYear = getVal('consumablesYear');
-      const workWeeks = getVal('workWeeks');
-      const taxRegion = $('taxRegion').value;
-      const customTaxRate = getVal('customTaxRate');
+      const taxRate = x.taxRegion === "custom"
+        ? x.customTaxRate
+        : moscowTaxPerHp(x.engineHp);
 
-      $('customTaxField').style.display = taxRegion === 'custom' ? 'block' : 'none';
+      const taxYear = x.engineHp * taxRate;
 
-      const taxRate = taxRegion === 'custom' ? customTaxRate : moscowTaxPerHp(engineHp);
-      const taxYear = engineHp * taxRate;
-
-      const kmPerDay = distanceOneWay * 2;
-      const tripsPerDay = 2;
-      const taxiPerDay = taxiOneWay * tripsPerDay;
-      const commuteDaysPerYear = daysPerWeek * workWeeks;
+      const kmPerDay = x.distanceOneWay * 2;
+      const commuteDaysPerYear = x.daysPerWeek * x.workWeeks;
       const kmYear = kmPerDay * commuteDaysPerYear;
 
-      const litersYear = kmYear * fuelConsumption / 100;
-      const fuelYear = litersYear * fuelPrice;
+      const litersYear = kmYear * x.fuelConsumption / 100;
+      const fuelYear = litersYear * x.fuelPrice;
 
-      const carYearly = fuelYear + osagoYear + maintenanceYear + consumablesYear + taxYear;
+      const taxiPerDay = x.taxiOneWay * 2;
       const taxiYearly = taxiPerDay * commuteDaysPerYear;
-      const yearlySavings = taxiYearly - carYearly;
 
-      const carPerDay = commuteDaysPerYear > 0 ? carYearly / commuteDaysPerYear : 0;
+      const parkingYear = x.parkingMonth * 12;
+      const washYear = x.washMonth * 12;
+      const tollYear = x.tollPerDay * commuteDaysPerYear;
 
-      let paybackYears = Infinity;
-      let paybackMonths = Infinity;
-      if (yearlySavings > 0) {
-        paybackYears = carPrice / yearlySavings;
-        paybackMonths = paybackYears * 12;
-      }
+      const carYearlyNoDep =
+        fuelYear +
+        x.osagoYear +
+        x.kaskoYear +
+        x.maintenanceYear +
+        x.repairsYear +
+        x.consumablesYear +
+        x.tireServiceYear +
+        parkingYear +
+        washYear +
+        tollYear +
+        taxYear;
 
-      $('taxiYearly').textContent = formatRub(taxiYearly);
-      $('carYearly').textContent = formatRub(carYearly);
-      $('taxYearly').textContent = formatRub(taxYear);
-      $('yearlySavings').textContent = yearlySavings > 0 ? formatRub(yearlySavings) : 'Нет экономии';
-      $('kmYearly').textContent = formatNum(kmYear, 0) + ' км';
-      $('fuelYearly').textContent = formatRub(fuelYear);
-      $('taxiPerDay').textContent = formatRub(taxiPerDay);
-      $('carPerDay').textContent = formatRub(carPerDay);
+      const totalDepreciation = Math.max(x.carPrice - x.resalePrice, 0);
+      const depreciationYearly = totalDepreciation / x.ownershipYears;
 
-      const maxBar = Math.max(taxiPerDay, carPerDay, 1);
-      $('taxiBar').style.width = (taxiPerDay / maxBar * 100).toFixed(1) + '%';
-      $('carBar').style.width = (carPerDay / maxBar * 100).toFixed(1) + '%';
+      const realCarYearly = carYearlyNoDep + depreciationYearly;
 
-      if (yearlySavings > 0) {
-        $('paybackMain').textContent = paybackYears >= 10
-          ? `${formatNum(paybackYears, 1)} года`
-          : `${formatNum(paybackYears, 2)} года`;
+      const simpleYearlySavings = taxiYearly - carYearlyNoDep;
+      const realYearlySavings = taxiYearly - realCarYearly;
 
-        $('paybackText').textContent =
-          `Это примерно ${formatNum(paybackMonths, 1)} месяца, если ездить ${daysPerWeek} дн./нед. ` +
-          `при расстоянии ${distanceOneWay} км в одну сторону.`;
-      } else if (yearlySavings === 0) {
-        $('paybackMain').textContent = '0';
-        $('paybackText').textContent = 'По текущим параметрам машина и такси обходятся примерно одинаково.';
-      } else {
-        $('paybackMain').textContent = 'Не окупается';
-        $('paybackText').textContent =
-          'По текущим параметрам годовая стоимость владения машиной выше, чем расходы на такси.';
-      }
+      const simplePaybackYears = simpleYearlySavings > 0
+        ? x.carPrice / simpleYearlySavings
+        : Infinity;
 
-      const details = [
-        `В год получается ${formatNum(commuteDaysPerYear, 0)} поездочных дней и ${formatNum(kmYear, 0)} км пробега.`,
-        `На бензин уходит ${formatNum(litersYear, 1)} л в год, то есть ${formatRub(fuelYear)}.`,
-        `Транспортный налог рассчитан как ${formatNum(engineHp, 0)} л.с. × ${formatRub(taxRate).replace('₽','₽/л.с.')}.`,
-        `Полная стоимость машины в год = бензин + ОСАГО + ТО + расходники + налог.`
-      ];
-      $('detailsText').textContent = details.join(' ');
+      const realOwnershipResult =
+        taxiYearly * x.ownershipYears -
+        (
+          x.carPrice -
+          x.resalePrice +
+          carYearlyNoDep * x.ownershipYears
+        );
+
+      const realPaybackYears = realYearlySavings > 0
+        ? totalDepreciation / realYearlySavings
+        : Infinity;
+
+      return {
+        ...x,
+        taxRate,
+        taxYear,
+        kmPerDay,
+        commuteDaysPerYear,
+        kmYear,
+        litersYear,
+        fuelYear,
+        taxiPerDay,
+        taxiYearly,
+        parkingYear,
+        washYear,
+        tollYear,
+        carYearlyNoDep,
+        totalDepreciation,
+        depreciationYearly,
+        realCarYearly,
+        simpleYearlySavings,
+        realYearlySavings,
+        simplePaybackYears,
+        realPaybackYears,
+        realOwnershipResult
+      };
     }
 
-    [
-      'carPrice','engineHp','distanceOneWay','daysPerWeek','taxiOneWay',
-      'fuelConsumption','fuelPrice','osagoYear','maintenanceYear',
-      'consumablesYear','workWeeks','taxRegion','customTaxRate'
-    ].forEach(id => $(id).addEventListener('input', update));
+    function applyCarPreset(key) {
+      const preset = carPresets[key];
 
-    update();
+      if (!preset) {
+        update();
+        return;
+      }
+
+      const years = getVal("ownershipYears") || 5;
+      const scenario = scenarioPresets[activeScenario];
+
+      setVal("carPrice", preset.price);
+      setVal("engineHp", preset.hp);
+      setVal("fuelConsumption", preset.fuel);
+
+      const resale = Math.round(
+        preset.price *
+        preset.resaleRatio *
+        scenario.resaleMultiplier / 10000
+      ) * 10000;
+
+      setVal("resalePrice", Math.min(resale, preset.price));
+      setVal("ownershipYears", years);
+
+      setVal("osagoYear", preset.osago);
+      setVal("maintenanceYear", preset.maintenance);
+      setVal("repairsYear", Math.round(preset.repairs * scenario.repairsMultiplier / 1000) * 1000);
+      setVal("consumablesYear", preset.consumables);
+      setVal("tireServiceYear", preset.tires);
+
+      setVal("fuelPrice", scenario.fuelPrice);
+      setVal("parkingMonth", scenario.parkingMonth);
+      setVal("washMonth", scenario.washMonth);
+      setVal("kaskoYear", scenario.kaskoYear);
+      setVal("workWeeks", scenario.weeks);
+
+      update();
+    }
+
+    function applyScenario(key) {
+      activeScenario = key;
+
+      document.querySelectorAll(".scenario-btn").forEach((button) => {
+        button.classList.toggle("active", button.dataset.scenario === key);
+      });
+
+      applyCarPreset($("carPreset").value);
+    }
+
+    function drawTimelineChart(data) {
+      const canvas = $("timelineChart");
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = canvas.clientWidth;
+      const cssHeight = Number(canvas.getAttribute("height"));
+
+      canvas.width = cssWidth * dpr;
+      canvas.height = cssHeight * dpr;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+      const pad = { left: 42, right: 16, top: 16, bottom: 34 };
+      const width = cssWidth - pad.left - pad.right;
+      const height = cssHeight - pad.top - pad.bottom;
+
+      const years = Math.max(1, Math.ceil(data.ownershipYears));
+      const points = [];
+
+      for (let year = 0; year <= years; year++) {
+        const value =
+          data.taxiYearly * year -
+          (
+            data.carPrice -
+            (year === years ? data.resalePrice : 0) +
+            data.carYearlyNoDep * year
+          );
+
+        points.push({ year, value });
+      }
+
+      const values = points.map((p) => p.value);
+      const minValue = Math.min(...values, 0);
+      const maxValue = Math.max(...values, 0);
+
+      const range = Math.max(maxValue - minValue, 1);
+
+      function xScale(year) {
+        return pad.left + (year / years) * width;
+      }
+
+      function yScale(value) {
+        return pad.top + height - ((value - minValue) / range) * height;
+      }
+
+      ctx.strokeStyle = "rgba(255,255,255,.12)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (height / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + width, y);
+        ctx.stroke();
+      }
+
+      const zeroY = yScale(0);
+      ctx.strokeStyle = "rgba(255,255,255,.28)";
+      ctx.beginPath();
+      ctx.moveTo(pad.left, zeroY);
+      ctx.lineTo(pad.left + width, zeroY);
+      ctx.stroke();
+
+      const gradient = ctx.createLinearGradient(pad.left, 0, pad.left + width, 0);
+      gradient.addColorStop(0, "#7c9cff");
+      gradient.addColorStop(1, "#40d68b");
+
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        const x = xScale(point.year);
+        const y = yScale(point.value);
+
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      points.forEach((point) => {
+        const x = xScale(point.year);
+        const y = yScale(point.value);
+
+        ctx.beginPath();
+        ctx.fillStyle = point.value >= 0 ? "#40d68b" : "#ffbf5f";
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = "rgba(245,247,255,.72)";
+      ctx.font = "12px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+
+      for (let year = 0; year <= years; year++) {
+        ctx.fillText(String(year), xScale(year), cssHeight - 12);
+      }
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "rgba(245,247,255,.62)";
+      ctx.fillText(formatRub(maxValue), 6, pad.top + 10);
+      ctx.fillText(formatRub(minValue), 6, pad.top + height);
+    }
+
+    function drawCostChart(data) {
+      const canvas = $("costChart");
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = canvas.clientWidth;
+      const cssHeight = Number(canvas.getAttribute("height"));
+
+      canvas.width = cssWidth * dpr;
+      canvas.height = cssHeight * dpr;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+      const items = [
+        { label: "Бензин", value: data.fuelYear },
+        { label: "ТО", value: data.maintenanceYear },
+        { label: "Ремонт", value: data.repairsYear },
+        { label: "Парковки", value: data.parkingYear },
+        { label: "Мойки", value: data.washYear },
+        { label: "Шины", value: data.tireServiceYear },
+        { label: "ОСАГО", value: data.osagoYear },
+        { label: "КАСКО", value: data.kaskoYear },
+        { label: "Налог", value: data.taxYear },
+        { label: "Платные", value: data.tollYear }
+      ].filter((item) => item.value > 0);
+
+      const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
+
+      const colors = [
+        "#7c9cff",
+        "#9b7cff",
+        "#40d68b",
+        "#ffbf5f",
+        "#53d7ff",
+        "#ff6b7a",
+        "#c7f464",
+        "#f59eff",
+        "#9ee7ff",
+        "#ffd166"
+      ];
+
+      const cx = Math.min(cssWidth * 0.34, 170);
+      const cy = cssHeight / 2;
+      const radius = Math.min(cssHeight * 0.34, cssWidth * 0.22);
+      const innerRadius = radius * 0.58;
+
+      let start = -Math.PI / 2;
+
+      items.forEach((item, index) => {
+        const angle = (item.value / total) * Math.PI * 2;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, start, start + angle);
+        ctx.closePath();
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.globalAlpha = .95;
+        ctx.fill();
+
+        start += angle;
+      });
+
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.fillStyle = "#101629";
+      ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f5f7ff";
+      ctx.font = "800 16px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Авто", cx, cy - 3);
+
+      ctx.fillStyle = "rgba(245,247,255,.62)";
+      ctx.font = "12px Inter, system-ui, sans-serif";
+      ctx.fillText(formatRub(total), cx, cy + 18);
+
+      const legendX = Math.min(cssWidth * 0.58, cx + radius + 44);
+      let legendY = 26;
+
+      ctx.textAlign = "left";
+
+      items.slice(0, 8).forEach((item, index) => {
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.beginPath();
+        ctx.roundRect(legendX, legendY - 9, 10, 10, 3);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(245,247,255,.78)";
+        ctx.font = "12px Inter, system-ui, sans-serif";
+        ctx.fillText(item.label, legendX + 16, legendY);
+
+        ctx.fillStyle = "rgba(245,247,255,.52)";
+        ctx.fillText(formatRub(item.value), legendX + 16, legendY + 15);
+
+        legendY += 35;
+      });
+    }
+
+    function updateBars(data) {
+      const maxValue = Math.max(data.taxiYearly, data.carYearlyNoDep, data.realCarYearly, 1);
+
+      $("barTaxi").style.width = `${data.taxiYearly / maxValue * 100}%`;
+      $("barCar").style.width = `${data.carYearlyNoDep / maxValue * 100}%`;
+      $("barRealCar").style.width = `${data.realCarYearly / maxValue * 100}%`;
+
+      $("barTaxiText").textContent = formatRub(data.taxiYearly);
+      $("barCarText").textContent = formatRub(data.carYearlyNoDep);
+      $("barRealCarText").textContent = formatRub(data.realCarYearly);
+    }
+
+    function update() {
+      const data = calculate();
+
+      $("customTaxField").style.display = data.taxRegion === "custom" ? "block" : "none";
+
+      $("miniCarPrice").textContent = formatRub(data.carPrice);
+      $("miniHp").textContent = `${formatNum(data.engineHp, 0)} л.с.`;
+
+      $("taxiYearly").textContent = formatRub(data.taxiYearly);
+      $("taxiDaily").textContent = `${formatRub(data.taxiPerDay)} в поездочный день`;
+
+      $("carYearlyNoDep").textContent = formatRub(data.carYearlyNoDep);
+
+      $("simpleYearlySavings").textContent =
+        data.simpleYearlySavings > 0
+          ? formatRub(data.simpleYearlySavings)
+          : "Нет экономии";
+
+      $("realYearlySavings").textContent =
+        data.realYearlySavings > 0
+          ? formatRub(data.realYearlySavings)
+          : "Минус";
+
+      $("depreciationYearly").textContent = formatRub(data.depreciationYearly);
+      $("depreciationText").textContent =
+        `Покупка ${formatRub(data.carPrice)} → продажа ${formatRub(data.resalePrice)} за ${formatNum(data.ownershipYears, 0)} лет`;
+
+      $("kmYearly").textContent = `${formatNum(data.kmYear, 0)} км`;
+      $("fuelLiters").textContent = `${formatNum(data.litersYear, 0)} л бензина в год`;
+
+      $("simpleSavingCard").classList.toggle("bad", data.simpleYearlySavings <= 0);
+      $("realSavingCard").classList.toggle("bad", data.realYearlySavings <= 0);
+      $("realSavingCard").classList.toggle("good", data.realYearlySavings > 0);
+
+      if (data.simpleYearlySavings > 0) {
+        const months = data.simplePaybackYears * 12;
+
+        $("paybackMain").textContent =
+          data.simplePaybackYears >= 10
+            ? `${formatNum(data.simplePaybackYears, 1)} года`
+            : `${formatNum(data.simplePaybackYears, 2)} года`;
+
+        $("paybackText").textContent =
+          `Это примерно ${formatNum(months, 1)} месяца. Здесь цена машины считается полной суммой покупки, ` +
+          `а будущая продажа не вычитается, чтобы ответить именно на вопрос: когда экономия на такси покроет покупку.`;
+      } else {
+        $("paybackMain").textContent = "Не окупается";
+        $("paybackText").textContent =
+          "По текущим параметрам ежегодная эксплуатация авто не дешевле такси, поэтому покупка не отбивается.";
+      }
+
+      const breakEven = data.simpleYearlySavings > 0
+        ? data.simplePaybackYears
+        : null;
+
+      $("breakEvenLabel").textContent = breakEven
+        ? `точка окупаемости: ${formatNum(breakEven, 1)} года`
+        : "точки окупаемости нет";
+
+      const realResultText = data.realOwnershipResult >= 0
+        ? `За ${formatNum(data.ownershipYears, 0)} лет владение машиной выгоднее такси примерно на ${formatRub(data.realOwnershipResult)}.`
+        : `За ${formatNum(data.ownershipYears, 0)} лет владение машиной дороже такси примерно на ${formatRub(Math.abs(data.realOwnershipResult))}.`;
+
+      $("explainText").innerHTML =
+        `<strong>Как читать расчёт.</strong> ` +
+        `Простая окупаемость считает: цена машины / (такси − эксплуатация). ` +
+        `Будущая продажа там специально не учитывается. ` +
+        `А реальная экономика считает иначе: такси минус эксплуатация минус потеря стоимости машины. ` +
+        `${realResultText} ` +
+        `Транспортный налог: ${formatNum(data.engineHp, 0)} л.с. × ${formatRub(data.taxRate).replace("₽", "₽/л.с.")} = ${formatRub(data.taxYear)}.`;
+
+      updateBars(data);
+      drawTimelineChart(data);
+      drawCostChart(data);
+    }
+
+    inputIds.forEach((id) => {
+      $(id).addEventListener("input", update);
+      $(id).addEventListener("change", update);
+    });
+
+    $("carPreset").addEventListener("change", () => {
+      applyCarPreset($("carPreset").value);
+    });
+
+    document.querySelectorAll(".scenario-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        applyScenario(button.dataset.scenario);
+      });
+    });
+
+    window.addEventListener("resize", update);
+
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + width, y, x + width, y + height, r);
+        this.arcTo(x + width, y + height, x, y + height, r);
+        this.arcTo(x, y + height, x, y, r);
+        this.arcTo(x, y, x + width, y, r);
+        this.closePath();
+
+        return this;
+      };
+    }
+
+    applyCarPreset("haval_jolion");
   </script>
 </body>
 </html>
